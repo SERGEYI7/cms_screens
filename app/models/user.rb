@@ -7,9 +7,9 @@ class User < ApplicationRecord
          :omniauthable # ,:confirmable
   include DeviseTokenAuth::Concerns::User
   # Include default devise modules.
-  validates :name, length: { in: 2..30 }, presence: true
   has_many :events, dependent: :delete_all
   has_many :screens, dependent: :delete_all
   has_many :playlists, dependent: :delete_all
   has_many :contents, dependent: :delete_all
+  validates :name, length: { in: 2..30 }, presence: true
 end
