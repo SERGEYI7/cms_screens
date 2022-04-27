@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 class EventSerializer < ActiveModel::Serializer
-  attributes :id, :user_id
+  attributes :id, :name, :user_id
 end

@@ -11,5 +11,4 @@ class User < ApplicationRecord
   has_many :screens, dependent: :delete_all
   has_many :playlists, dependent: :delete_all
   has_many :contents, dependent: :delete_all
-  validates :name, length: { in: 2..30 }, presence: true
 end

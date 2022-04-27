@@ -12,40 +12,46 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 20_220_421_053_944) do
+ActiveRecord::Schema[7.0].define(version: 20_220_421_044_251) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "contents", force: :cascade do |t|
-    t.string "name"
-    t.integer "user_id"
-    t.integer "playlist_id"
     t.text "attachment"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.bigint "playlist_id"
+    t.index ["playlist_id"], name: "index_contents_on_playlist_id"
+    t.index ["user_id"], name: "index_contents_on_user_id"
   end
 
   create_table "events", force: :cascade do |t|
     t.string "name"
-    t.integer "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.index ["user_id"], name: "index_events_on_user_id"
   end
 
   create_table "playlists", force: :cascade do |t|
     t.string "name"
-    t.integer "user_id"
-    t.integer "screen_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.bigint "screen_id"
+    t.index ["screen_id"], name: "index_playlists_on_screen_id"
+    t.index ["user_id"], name: "index_playlists_on_user_id"
   end
 
   create_table "screens", force: :cascade do |t|
     t.string "name"
-    t.integer "user_id"
-    t.integer "event_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "user_id"
+    t.bigint "event_id"
+    t.index ["event_id"], name: "index_screens_on_event_id"
+    t.index ["user_id"], name: "index_screens_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -72,4 +78,12 @@ ActiveRecord::Schema[7.0].define(version: 20_220_421_053_944) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index %w[uid provider], name: "index_users_on_uid_and_provider", unique: true
   end
+
+  add_foreign_key "contents", "playlists"
+  add_foreign_key "contents", "users"
+  add_foreign_key "events", "users"
+  add_foreign_key "playlists", "screens"
+  add_foreign_key "playlists", "users"
+  add_foreign_key "screens", "events"
+  add_foreign_key "screens", "users"
 end
