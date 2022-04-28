@@ -26,6 +26,13 @@ Rails.application.routes.draw do
         resources :playlists, only: %i[show index]
       end
 
+      post "playlists/:id/contents/:content_id/insert_at/:position", to: "playlists#content_insert_at"
+      post "playlists/:id/contents/:content_id/move_lower", to: "playlists#content_move_lower"
+      post "playlists/:id/contents/:content_id/move_higher", to: "playlists#content_move_higher"
+      post "playlists/:id/contents/:content_id/move_to_bottom", to: "playlists#content_move_to_bottom"
+      post "playlists/:id/contents/:content_id/move_to_top", to: "playlists#content_move_to_top"
+      post "playlists/:id/contents/:content_id/remove_from_list", to: "playlists#content_remove_from_list"
+
       resources :playlists, only: %i[update create destroy]
       resources :playlists, only: %i[show index] do
         resources :contents, only: %i[show index]

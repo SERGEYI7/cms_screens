@@ -12,17 +12,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 20_220_421_044_251) do
+ActiveRecord::Schema[7.0].define(version: 20_220_428_084_057) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "contents", force: :cascade do |t|
     t.text "attachment"
-    t.integer "position"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id"
     t.bigint "playlist_id"
+    t.integer "position"
     t.index ["playlist_id"], name: "index_contents_on_playlist_id"
     t.index ["user_id"], name: "index_contents_on_user_id"
   end

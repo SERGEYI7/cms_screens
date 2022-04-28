@@ -45,6 +45,67 @@ module Api
         end
       end
 
+      def content_insert_at
+        result = Playlists::InsertContentAtPlaylistService.call(params[:id],
+                                                                params[:content_id],
+                                                                params[:position])
+        if result.success?
+          render json: { data: serializer_playlist(result.playlist) }, status: :ok
+        else
+          render json: { errors: result.errors }, status: :unprocessable_entity
+        end
+      end
+
+      def content_move_lower
+        result = Playlists::PlaylistContentMoveLowerService.call(params[:id],
+                                                                 params[:content_id])
+        if result.success?
+          render json: { data: serializer_playlist(result.playlist) }, status: :ok
+        else
+          render json: { errors: result.errors }, status: :unprocessable_entity
+        end
+      end
+
+      def content_move_higher
+        result = Playlists::PlaylistContentMoveHigherService.call(params[:id],
+                                                                  params[:content_id])
+        if result.success?
+          render json: { data: serializer_playlist(result.playlist) }, status: :ok
+        else
+          render json: { errors: result.errors }, status: :unprocessable_entity
+        end
+      end
+
+      def content_move_to_bottom
+        result = Playlists::PlaylistContentMoveToBottomService.call(params[:id],
+                                                                    params[:content_id])
+        if result.success?
+          render json: { data: serializer_playlist(result.playlist) }, status: :ok
+        else
+          render json: { errors: result.errors }, status: :unprocessable_entity
+        end
+      end
+
+      def content_move_to_top
+        result = Playlists::PlaylistContentMoveToTopService.call(params[:id],
+                                                                 params[:content_id])
+        if result.success?
+          render json: { data: serializer_playlist(result.playlist) }, status: :ok
+        else
+          render json: { errors: result.errors }, status: :unprocessable_entity
+        end
+      end
+
+      def content_remove_from_list
+        result = Playlists::PlaylistContentRemoveFromListService.call(params[:id],
+                                                                      params[:content_id])
+        if result.success?
+          render json: { data: serializer_playlist(result.playlist) }, status: :ok
+        else
+          render json: { errors: result.errors }, status: :unprocessable_entity
+        end
+      end
+
       private
 
       def serializer_playlists(content)
