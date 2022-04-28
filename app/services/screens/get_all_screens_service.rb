@@ -13,6 +13,7 @@ module Screens
       screens ||= Screen.where(user_id:, event_id:).first(50) if user_id.present? && event_id.present?
       screens ||= Screen.where(user_id:).first(50) if user_id.present?
       screens ||= Screen.first(50)
+
       OpenStruct.new(screens:)
     end
   end

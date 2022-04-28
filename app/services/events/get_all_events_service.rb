@@ -11,6 +11,7 @@ module Events
     def call
       events ||= Event.where(user_id:) if user_id.present?
       events ||= Event.first(50)
+
       OpenStruct.new(events:)
     end
   end

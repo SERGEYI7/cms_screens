@@ -4,7 +4,7 @@ class CreateContents < ActiveRecord::Migration[7.0]
   def change
     create_table :contents do |t|
       t.text :attachment
-
+      t.integer :position
       t.timestamps
     end
 

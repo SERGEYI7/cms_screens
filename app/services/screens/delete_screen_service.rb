@@ -14,6 +14,7 @@ module Screens
       return OpenStruct.new(success?: false, screen: nil, errors: ["screen not found"]) if screen.blank?
 
       screen.destroy
+
       OpenStruct.new(success?: screen.destroyed?, screen:, errors: screen.errors.full_messages)
     end
   end

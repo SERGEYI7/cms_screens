@@ -18,6 +18,7 @@ ActiveRecord::Schema[7.0].define(version: 20_220_421_044_251) do
 
   create_table "contents", force: :cascade do |t|
     t.text "attachment"
+    t.integer "position"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id"

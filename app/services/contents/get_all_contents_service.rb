@@ -13,6 +13,7 @@ module Contents
       contents ||= Content.where(user_id:, playlist_id:).first(50) if user_id.present? && playlist_id.present?
       contents ||= Content.where(user_id:).first(50) if user_id.present?
       contents ||= Content.first(50)
+
       OpenStruct.new(contents:)
     end
   end

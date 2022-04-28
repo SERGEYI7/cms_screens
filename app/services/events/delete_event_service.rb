@@ -14,6 +14,7 @@ module Events
       return OpenStruct.new(success?: false, event: nil, errors: ["event not found"]) if event.blank?
 
       event.destroy
+
       OpenStruct.new(success?: event.destroyed?, event:, errors: event.errors.full_messages)
     end
   end

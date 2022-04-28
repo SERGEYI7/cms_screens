@@ -14,6 +14,7 @@ module Contents
       return OpenStruct.new(success?: false, content: nil, errors: ["content not found"]) if content.blank?
 
       content.destroy
+
       OpenStruct.new(success?: content.destroyed?, content:, errors: content.errors.full_messages)
     end
   end
