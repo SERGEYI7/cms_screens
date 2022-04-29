@@ -3,6 +3,8 @@
 module Api
   module V1
     class ContentsController < ApplicationController
+      before_action :authenticate_user!, except: %i[index show]
+
       def index
         result = Contents::GetAllContentsService.call
         render json: { data: serializer_contents(result.contents) }, status: :ok
@@ -27,6 +29,7 @@ module Api
       end
 
       def update
+        authorize Content.find_by(user_id: current_user.id)
         result = Contents::UpdateContentService.call(params[:id], params[:user_id], params[:playlist_id],
                                                      params[:attachment])
         if result.success?
@@ -37,6 +40,7 @@ module Api
       end
 
       def destroy
+        authorize Content.find_by(user_id: current_user.id)
         result = Contents::DeleteContentService.call(params[:id])
         if result.success?
           render json: { data: serializer_content(result.content) }, status: :ok

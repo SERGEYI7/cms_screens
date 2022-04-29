@@ -3,6 +3,8 @@
 module Api
   module V1
     class PlaylistsController < ApplicationController
+      before_action :authenticate_user!, except: %i[index show]
+
       def index
         result = Playlists::GetAllPlaylistsService.call
         render json: { data: serializer_playlists(result.playlists) }, status: :ok
@@ -27,6 +29,7 @@ module Api
       end
 
       def update
+        authorize Playlist.find_by(user_id: current_user.id)
         result = Playlists::UpdatePlaylistService.call(params[:id], params[:name], params[:user_id],
                                                        params[:screen_id])
         if result.success?
@@ -37,6 +40,7 @@ module Api
       end
 
       def destroy
+        authorize Playlist.find_by(user_id: current_user.id)
         result = Playlists::DeletePlaylistService.call(params[:id])
         if result.success?
           render json: { data: serializer_playlist(result.playlist) }, status: :ok

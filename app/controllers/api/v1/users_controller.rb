@@ -4,6 +4,7 @@ module Api
   module V1
     class UsersController < ApplicationController
       def index
+        authorize User.find(current_user.id)
         result = Users::GetAllUsersService.call
         render json: { data: serializer_users(result.users) }, status: :ok
       end

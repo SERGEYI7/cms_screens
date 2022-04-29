@@ -3,6 +3,8 @@
 module Api
   module V1
     class ScreensController < ApplicationController
+      before_action :authenticate_user!, except: %i[index show]
+
       def index
         result = Screens::GetAllScreensService.call
         render json: { data: serializer_screens(result.screens) }, status: :ok
@@ -27,6 +29,7 @@ module Api
       end
 
       def update
+        authorize Screen.find_by(user_id: current_user.id)
         result = Screens::UpdateScreenService.call(params[:id], params[:name], params[:user_id],
                                                    params[:event_id])
         if result.success?
@@ -37,6 +40,7 @@ module Api
       end
 
       def destroy
+        authorize Screen.find_by(user_id: current_user.id)
         result = Screens::DeleteScreenService.call(params[:id])
         if result.success?
           render json: { data: serializer_screen(result.screen) }, status: :ok

@@ -3,7 +3,7 @@
 module Api
   module V1
     class EventsController < ApplicationController
-      # before_action :authenticate_user!
+      before_action :authenticate_user!, except: %i[index show]
 
       def index
         result = Events::GetAllEventsService.call
@@ -29,6 +29,7 @@ module Api
       end
 
       def destroy
+        authorize Event.find_by(user_id: current_user.id)
         result = Events::DeleteEventService.call(params[:id])
         if result.success?
           render json: { data: serializer_event(result.event) }, status: :ok
@@ -38,6 +39,7 @@ module Api
       end
 
       def update
+        authorize Event.find_by(user_id: current_user.id)
         result = Events::UpdateEventService.call(
           params[:id],
           params[:name],
