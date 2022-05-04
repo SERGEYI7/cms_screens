@@ -2,16 +2,16 @@
 
 module Events
   class DeleteEventService < ApplicationService
-    attr_reader :id
-
-    def initialize(id)
-      @id = id
-    end
-
     def call
       event = Event.find_by(id:)
 
       return OpenStruct.new(success?: false, event: nil, errors: ["event not found"]) if event.blank?
+
+      begin
+        authorize event, :destroy?
+      rescue StandardError
+        return OpenStruct.new(success?: false, event: nil, errors: ["must be logged in"])
+      end
 
       event.destroy
 

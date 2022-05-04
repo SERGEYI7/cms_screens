@@ -3,15 +3,19 @@
 module Api
   module V1
     class PlaylistsController < ApplicationController
-      before_action :authenticate_user!, except: %i[index show]
+      before_action :authenticate_user!
 
       def index
-        result = Playlists::GetAllPlaylistsService.call
-        render json: { data: serializer_playlists(result.playlists) }, status: :ok
+        result = Playlists::GetAllPlaylistsService.call(current_user:)
+        if result.success?
+          render json: { data: serializer_playlists(result.playlists) }, status: :ok
+        else
+          render json: { errors: result.errors }, status: :unprocessable_entity
+        end
       end
 
       def show
-        result = Playlists::GetPlaylistService.call(params[:id], params[:user_id], params[:screen_id])
+        result = Playlists::GetPlaylistService.call(id: params[:id], current_user:, screen_id: params[:screen_id])
         if result.success?
           render json: { data: serializer_playlist(result.playlist) }, status: :ok
         else
@@ -20,7 +24,8 @@ module Api
       end
 
       def create
-        result = Playlists::CreatePlaylistService.call(params[:name], params[:user_id], params[:screen_id])
+        result = Playlists::CreatePlaylistService.call(name: params[:name], current_user:,
+                                                       screen_id: params[:screen_id])
         if result.success?
           render json: { data: serializer_playlist(result.playlist) }, status: :ok
         else
@@ -29,9 +34,8 @@ module Api
       end
 
       def update
-        authorize Playlist.find_by(user_id: current_user.id)
-        result = Playlists::UpdatePlaylistService.call(params[:id], params[:name], params[:user_id],
-                                                       params[:screen_id])
+        result = Playlists::UpdatePlaylistService.call(id: params[:id], name: params[:name], current_user:,
+                                                       screen_id: params[:screen_id])
         if result.success?
           render json: { data: serializer_playlist(result.playlist) }, status: :ok
         else
@@ -40,8 +44,7 @@ module Api
       end
 
       def destroy
-        authorize Playlist.find_by(user_id: current_user.id)
-        result = Playlists::DeletePlaylistService.call(params[:id])
+        result = Playlists::DeletePlaylistService.call(id: params[:id])
         if result.success?
           render json: { data: serializer_playlist(result.playlist) }, status: :ok
         else
@@ -50,9 +53,10 @@ module Api
       end
 
       def content_insert_at
-        result = Playlists::InsertContentAtPlaylistService.call(params[:id],
-                                                                params[:content_id],
-                                                                params[:position])
+        result = Playlists::InsertContentAtPlaylistService.call(id: params[:id],
+                                                                content_id: params[:content_id],
+                                                                position: params[:position],
+                                                                current_user:)
         if result.success?
           render json: { data: serializer_playlist(result.playlist) }, status: :ok
         else
@@ -61,8 +65,9 @@ module Api
       end
 
       def content_move_lower
-        result = Playlists::PlaylistContentMoveLowerService.call(params[:id],
-                                                                 params[:content_id])
+        result = Playlists::PlaylistContentMoveLowerService.call(id: params[:id],
+                                                                 content_id: params[:content_id],
+                                                                 current_user:)
         if result.success?
           render json: { data: serializer_playlist(result.playlist) }, status: :ok
         else
@@ -71,8 +76,9 @@ module Api
       end
 
       def content_move_higher
-        result = Playlists::PlaylistContentMoveHigherService.call(params[:id],
-                                                                  params[:content_id])
+        result = Playlists::PlaylistContentMoveHigherService.call(id: params[:id],
+                                                                  content_id: params[:content_id],
+                                                                  current_user:)
         if result.success?
           render json: { data: serializer_playlist(result.playlist) }, status: :ok
         else
@@ -81,8 +87,9 @@ module Api
       end
 
       def content_move_to_bottom
-        result = Playlists::PlaylistContentMoveToBottomService.call(params[:id],
-                                                                    params[:content_id])
+        result = Playlists::PlaylistContentMoveToBottomService.call(id: params[:id],
+                                                                    content_id: params[:content_id],
+                                                                    current_user:)
         if result.success?
           render json: { data: serializer_playlist(result.playlist) }, status: :ok
         else
@@ -91,8 +98,9 @@ module Api
       end
 
       def content_move_to_top
-        result = Playlists::PlaylistContentMoveToTopService.call(params[:id],
-                                                                 params[:content_id])
+        result = Playlists::PlaylistContentMoveToTopService.call(id: params[:id],
+                                                                 content_id: params[:content_id],
+                                                                 current_user:)
         if result.success?
           render json: { data: serializer_playlist(result.playlist) }, status: :ok
         else
@@ -101,8 +109,9 @@ module Api
       end
 
       def content_remove_from_list
-        result = Playlists::PlaylistContentRemoveFromListService.call(params[:id],
-                                                                      params[:content_id])
+        result = Playlists::PlaylistContentRemoveFromListService.call(id: params[:id],
+                                                                      content_id: params[:content_id],
+                                                                      current_user:)
         if result.success?
           render json: { data: serializer_playlist(result.playlist) }, status: :ok
         else

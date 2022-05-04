@@ -2,16 +2,16 @@
 
 module Contents
   class DeleteContentService < ApplicationService
-    attr_reader :id
-
-    def initialize(id)
-      @id = id
-    end
-
     def call
       content = Content.find_by(id:)
 
       return OpenStruct.new(success?: false, content: nil, errors: ["content not found"]) if content.blank?
+
+      begin
+        authorize content, :destroy?
+      rescue StandardError
+        return OpenStruct.new(success?: false, content: nil, errors: ["must be logged in"]) if content.blank?
+      end
 
       content.destroy
 

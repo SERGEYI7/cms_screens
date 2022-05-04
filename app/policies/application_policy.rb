@@ -4,35 +4,35 @@ class ApplicationPolicy
   attr_reader :user, :model
 
   def initialize(user, model)
+    return Pundit::NotAuthorizedError, "must be logged in" unless user
+
     @user = user
     @model = model
   end
 
   def index?
-    true
+    pass_check?
   end
 
   def show?
-    true
+    pass_check?
   end
 
   def create?
-    true
-  end
-
-  def new?
-    create?
+    pass_check?
   end
 
   def update?
-    user.present?
-  end
-
-  def edit?
-    update?
+    pass_check?
   end
 
   def destroy?
-    user.present?
+    pass_check?
+  end
+
+  private
+
+  def pass_check?
+    user.id == model.user_id
   end
 end

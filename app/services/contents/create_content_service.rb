@@ -2,16 +2,9 @@
 
 module Contents
   class CreateContentService < ApplicationService
-    attr_reader :user_id, :playlist_id, :attachment
-
-    def initialize(user_id, playlist_id, attachment)
-      @user_id = user_id
-      @playlist_id = playlist_id
-      @attachment = attachment
-    end
-
     def call
-      content = Content.new(user_id:, playlist_id:, attachment:)
+      content = Content.new(user_id: current_user.id, playlist_id:, attachment:)
+      authorize content, :create?
 
       OpenStruct.new(success?: content.save, content:, errors: content.errors.full_messages)
     end

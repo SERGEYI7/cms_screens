@@ -2,16 +2,16 @@
 
 module Playlists
   class DeletePlaylistService < ApplicationService
-    attr_reader :id
-
-    def initialize(id)
-      @id = id
-    end
-
     def call
       playlist = Playlist.find_by(id:)
 
       return OpenStruct.new(success?: false, playlist: nil, errors: ["playlist not found"]) if playlist.blank?
+
+      begin
+        authorize playlist, :destrooy?
+      rescue StandardError
+        return OpenStruct.new(success?: false, playlist: nil, errors: ["must be logged in"])
+      end
 
       playlist.destroy
 

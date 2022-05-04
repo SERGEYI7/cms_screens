@@ -3,15 +3,19 @@
 module Api
   module V1
     class ScreensController < ApplicationController
-      before_action :authenticate_user!, except: %i[index show]
+      before_action :authenticate_user!
 
       def index
-        result = Screens::GetAllScreensService.call
-        render json: { data: serializer_screens(result.screens) }, status: :ok
+        result = Screens::GetAllScreensService.call(current_user:)
+        if result.success?
+          render json: { screens: serializer_screens(result.screens) }, status: :ok
+        else
+          render json: { errors: result.errors }, status: :unprocessable_entity
+        end
       end
 
       def show
-        result = Screens::GetScreenService.call(params[:id], params[:user_id], params[:event_id])
+        result = Screens::GetScreenService.call(id: params[:id], current_user:, event_id: params[:event_id])
         if result.success?
           render json: { data: serializer_screen(result.screen) }, status: :ok
         else
@@ -20,7 +24,7 @@ module Api
       end
 
       def create
-        result = Screens::CreateScreenService.call(params[:name], params[:user_id], params[:event_id])
+        result = Screens::CreateScreenService.call(name: params[:name], current_user:, event_id: params[:event_id])
         if result.success?
           render json: { data: serializer_screen(result.screen) }, status: :ok
         else
@@ -29,9 +33,8 @@ module Api
       end
 
       def update
-        authorize Screen.find_by(user_id: current_user.id)
-        result = Screens::UpdateScreenService.call(params[:id], params[:name], params[:user_id],
-                                                   params[:event_id])
+        result = Screens::UpdateScreenService.call(id: params[:id], name: params[:name], current_user:,
+                                                   event_id: params[:event_id])
         if result.success?
           render json: { data: serializer_screen(result.screen) }, status: :ok
         else
@@ -40,8 +43,7 @@ module Api
       end
 
       def destroy
-        authorize Screen.find_by(user_id: current_user.id)
-        result = Screens::DeleteScreenService.call(params[:id])
+        result = Screens::DeleteScreenService.call(id: params[:id])
         if result.success?
           render json: { data: serializer_screen(result.screen) }, status: :ok
         else

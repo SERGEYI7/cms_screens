@@ -3,15 +3,19 @@
 module Api
   module V1
     class EventsController < ApplicationController
-      before_action :authenticate_user!, except: %i[index show]
+      before_action :authenticate_user!
 
       def index
-        result = Events::GetAllEventsService.call
-        render json: { data: serializer_events(result.events) }, status: :ok
+        result = Events::GetAllEventsService.call(current_user:)
+        if result.success?
+          render json: { data: serializer_events(result.events) }, status: :ok
+        else
+          render json: { errors: result.errors }, status: :unprocessable_entity
+        end
       end
 
       def show
-        result = Events::GetEventService.call(params[:id])
+        result = Events::GetEventService.call(id: params[:id], current_user:)
         if result.success?
           render json: { data: serializer_event(result.event) }, status: :ok
         else
@@ -20,7 +24,7 @@ module Api
       end
 
       def create
-        result = Events::CreateEventService.call(params[:name], params[:user_id])
+        result = Events::CreateEventService.call(name: params[:name], current_user:)
         if result.success?
           render json: { data: serializer_event(result.event) }, status: :ok
         else
@@ -29,8 +33,7 @@ module Api
       end
 
       def destroy
-        authorize Event.find_by(user_id: current_user.id)
-        result = Events::DeleteEventService.call(params[:id])
+        result = Events::DeleteEventService.call(id: params[:id], current_user:)
         if result.success?
           render json: { data: serializer_event(result.event) }, status: :ok
         else
@@ -39,11 +42,10 @@ module Api
       end
 
       def update
-        authorize Event.find_by(user_id: current_user.id)
         result = Events::UpdateEventService.call(
-          params[:id],
-          params[:name],
-          params[:user_id]
+          id: params[:id],
+          name: params[:name],
+          current_user:
         )
         if result.success?
           render json: { data: serializer_event(result.event) }, status: :ok

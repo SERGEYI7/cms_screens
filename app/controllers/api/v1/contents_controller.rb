@@ -3,15 +3,19 @@
 module Api
   module V1
     class ContentsController < ApplicationController
-      before_action :authenticate_user!, except: %i[index show]
+      before_action :authenticate_user!
 
       def index
-        result = Contents::GetAllContentsService.call
-        render json: { data: serializer_contents(result.contents) }, status: :ok
+        result = Contents::GetAllContentsService.call(current_user:)
+        if result.success?
+          render json: { data: serializer_contents(result.contents) }, status: :ok
+        else
+          render json: { errors: result.errors }, status: :unprocessable_entity
+        end
       end
 
       def show
-        result = Contents::GetContentService.call(params[:id], params[:user_id], params[:playlist_id])
+        result = Contents::GetContentService.call(id: params[:id], current_user:, playlist_id: params[:playlist_id])
         if result.success?
           render json: { data: serializer_content(result.content) }, status: :ok
         else
@@ -20,7 +24,8 @@ module Api
       end
 
       def create
-        result = Contents::CreateContentService.call(params[:user_id], params[:playlist_id], params[:attachment])
+        result = Contents::CreateContentService.call(current_user:, playlist_id: params[:playlist_id],
+                                                     attachment: params[:attachment])
         if result.success?
           render json: { data: serializer_content(result.content) }, status: :ok
         else
@@ -30,8 +35,8 @@ module Api
 
       def update
         authorize Content.find_by(user_id: current_user.id)
-        result = Contents::UpdateContentService.call(params[:id], params[:user_id], params[:playlist_id],
-                                                     params[:attachment])
+        result = Contents::UpdateContentService.call(id: params[:id], current_user:, playlist_id: params[:playlist_id],
+                                                     attachment: params[:attachment])
         if result.success?
           render json: { data: serializer_content(result.content) }, status: :ok
         else
@@ -40,7 +45,7 @@ module Api
       end
 
       def destroy
-        authorize Content.find_by(user_id: current_user.id)
+        authorize Content.find_by(id: params[:id], current_user:)
         result = Contents::DeleteContentService.call(params[:id])
         if result.success?
           render json: { data: serializer_content(result.content) }, status: :ok

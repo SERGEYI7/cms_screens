@@ -2,19 +2,23 @@
 
 module Playlists
   class GetAllPlaylistsService < ApplicationService
-    attr_reader :user_id, :screen_id
-
-    def initialize(user_id = nil, screen_id = nil)
-      @user_id = user_id
-      @screen_id = screen_id
-    end
-
     def call
-      playlists ||= Playlist.where(user_id:, screen_id:).first(50) if user_id.present? && screen_id.present?
-      playlists ||= Playlist.where(user_id:).first(50) if user_id.present?
+      if current_user.present? && screen_id.present?
+        playlists ||= Playlist.where(user_id: current_user.id,
+                                     screen_id:).first(50)
+      end
+      playlists ||= Playlist.where(user_id: current_user.id).first(50) if current_user.present?
       playlists ||= Playlist.first(50)
 
-      OpenStruct.new(playlists:)
+      return OpenStruct.new(success?: false, playlists: nil, errors: ["Playlists not found"]) if playlists.blank?
+
+      begin
+        authorize playlists[0], :index?
+      rescue StandardError
+        return OpenStruct.new(success?: false, playlists: nil, errors: ["must be logged in"])
+      end
+
+      OpenStruct.new(success?: true, playlists:)
     end
   end
 end

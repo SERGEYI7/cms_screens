@@ -2,24 +2,24 @@
 
 module Events
   class GetEventService < ApplicationService
-    attr_reader :id, :user_id
-
-    def initialize(id, user_id = nil)
-      @id = id
-      @user_id = user_id
-    end
-
     def call
-      return OpenStruct.new(success?: false, event: nil, errors: ["Event not found"]) if find_event.blank?
+      var_find_event = find_event
+      return OpenStruct.new(success?: false, event: nil, errors: ["Event not found"]) if var_find_event.blank?
 
-      OpenStruct.new(success?: true, event: find_event, errors: find_event.errors.full_messages)
+      begin
+        authorize var_find_event, :show?
+      rescue StandardError
+        return OpenStruct.new(success?: false, event: nil, errors: ["must be logged in"])
+      end
+
+      # authorize_user_model('event', var_find_event, :show?)
+
+      OpenStruct.new(success?: true, event: var_find_event, errors: var_find_event.errors.full_messages)
     end
 
     private
 
     def find_event
-      return Event.find_by(id:, user_id:) if user_id.present?
-
       Event.find_by(id:)
     end
   end

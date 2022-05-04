@@ -2,16 +2,16 @@
 
 module Contents
   class GetContentService < ApplicationService
-    attr_reader :id, :user_id, :playlist_id
-
-    def initialize(id, user_id = nil, playlist_id = nil)
-      @id = id
-      @user_id = user_id
-      @playlist_id = playlist_id
-    end
-
     def call
-      return OpenStruct.new(success?: false, content: nil, errors: ["content not found"]) if find_content.blank?
+      var_find_content = find_content
+
+      return OpenStruct.new(success?: false, content: nil, errors: ["content not found"]) if var_find_content.blank?
+
+      begin
+        authorize var_find_content, :show?
+      rescue StandardError
+        return OpenStruct.new(success?: false, content: nil, errors: ["must be logged in"])
+      end
 
       OpenStruct.new(success?: true, content: find_content, errors: nil)
     end
@@ -19,8 +19,11 @@ module Contents
     private
 
     def find_content
-      return Content.find_by(id:, user_id:, playlist_id:) if user_id.present? && playlist_id.present?
-      return Content.find_by(id:, user_id:) if user_id.present?
+      if current_user.present? && playlist_id.present?
+        return Content.find_by(id:, user_id: current_user.id,
+                               playlist_id:)
+      end
+      return Content.find_by(id:, user_id: current_user.id) if current_user.present?
 
       Content.find_by(id:)
     end

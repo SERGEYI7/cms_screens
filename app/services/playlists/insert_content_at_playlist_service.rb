@@ -2,18 +2,16 @@
 
 module Playlists
   class InsertContentAtPlaylistService < ApplicationService
-    attr_reader :id, :content_id, :position
-
-    def initialize(id, content_id, position)
-      @id = id
-      @content_id = content_id
-      @position = position
-    end
-
     def call
       playlist = Playlist.find_by(id:)
 
       return OpenStruct.new(success?: false, playlist: nil, errors: "playlist not found") if playlist.blank?
+
+      begin
+        authorize playlist, :update?
+      rescue StandardError
+        return OpenStruct.new(success?: false, playlist: nil, errors: ["must be logged in"])
+      end
 
       playlist_content = playlist.contents.find_by(id: content_id)
 

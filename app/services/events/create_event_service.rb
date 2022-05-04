@@ -2,15 +2,9 @@
 
 module Events
   class CreateEventService < ApplicationService
-    attr_reader :name, :user_id
-
-    def initialize(name, user_id)
-      @name = name
-      @user_id = user_id
-    end
-
     def call
-      event = Event.new(name:, user_id:)
+      event = Event.new(name:, user_id: current_user.id)
+      authorize event, :create?
 
       OpenStruct.new(success?: event.save, event:, errors: event.errors.full_messages)
     end

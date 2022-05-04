@@ -2,22 +2,19 @@
 
 module Contents
   class UpdateContentService < ApplicationService
-    attr_reader :id, :user_id, :playlist_id, :attachment
-
-    def initialize(id, user_id, playlist_id, attachment)
-      @id = id
-      @user_id = user_id
-      @playlist_id = playlist_id
-      @attachment = attachment
-    end
-
     def call
       content = Content.find_by(id:)
 
       return OpenStruct.new(success?: false, content: nil, errors: ["content not found"]) if content.blank?
 
+      begin
+        authorize content, :update?
+      rescue
+        return OpenStruct.new(success?: false, content: nil, errors: [must be logged in])
+      end
+
       content.update(
-        user_id:,
+        user_id: current_user.id,
         playlist_id:,
         attachment:
       )
