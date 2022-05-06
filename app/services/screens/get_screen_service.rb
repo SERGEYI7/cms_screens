@@ -1,26 +1,29 @@
 # frozen_string_literal: true
 
 module Screens
-  class GetScreenService < ApplicationService
+  class GetScreenService < AuthorizedService
+    attr_reader :id, :event_id
+
+    def initialize(id:, event_id:, current_user:)
+      super(current_user:)
+      @id = id
+      @event_id = event_id
+    end
+
     def call
-      return OpenStruct.new(success?: false, screen: nil, errors: ["screen not found"]) if find_screen.blank?
+      screen = find_screen
 
-      begin
-        authorize find_screen, :index?
-      rescue StandardError
-        return OpenStruct.new(success?: false, event: nil, errors: ["must be logged in"])
-      end
+      return OpenStruct.new(success?: false, screen: nil, errors: ["screen not found"]) if screen.blank?
 
-      OpenStruct.new(success?: true, screen: find_screen, errors: nil)
+      OpenStruct.new(success?: true, screen:, errors: nil)
     end
 
     private
 
     def find_screen
-      return Screen.find_by(id:, user_id: current_user.id, event_id:) if current_user.present? && event_id.present?
-      return Screen.find_by(id:, user_id: current_user.id) if current_user.present?
+      return current_user.screens.find_by(id:, event_id:) if event_id.present?
 
-      Screen.find_by(id:)
+      current_user.screens.find_by(id:)
     end
   end
 end

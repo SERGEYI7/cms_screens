@@ -1,31 +1,29 @@
 # frozen_string_literal: true
 
 module Contents
-  class GetContentService < ApplicationService
+  class GetContentService < AuthorizedService
+    attr_reader :id, :playlist_id
+
+    def initialize(id:, playlist_id:, current_user:)
+      super(current_user:)
+      @id = id
+      @playlist_id = playlist_id
+    end
+
     def call
-      var_find_content = find_content
+      content = find_content
 
-      return OpenStruct.new(success?: false, content: nil, errors: ["content not found"]) if var_find_content.blank?
+      return OpenStruct.new(success?: false, content: nil, errors: ["content not found"]) if content.blank?
 
-      begin
-        authorize var_find_content, :show?
-      rescue StandardError
-        return OpenStruct.new(success?: false, content: nil, errors: ["must be logged in"])
-      end
-
-      OpenStruct.new(success?: true, content: find_content, errors: nil)
+      OpenStruct.new(success?: true, content:, errors: nil)
     end
 
     private
 
     def find_content
-      if current_user.present? && playlist_id.present?
-        return Content.find_by(id:, user_id: current_user.id,
-                               playlist_id:)
-      end
-      return Content.find_by(id:, user_id: current_user.id) if current_user.present?
+      return current_user.contents.find_by(id:, playlist_id:) if playlist_id.present?
 
-      Content.find_by(id:)
+      current_user.contents.find_by(id:)
     end
   end
 end

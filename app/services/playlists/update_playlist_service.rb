@@ -1,19 +1,24 @@
 # frozen_string_literal: true
 
 module Playlists
-  class UpdatePlaylistService < ApplicationService
+  class UpdatePlaylistService < AuthorizedService
+    attr_reader :id, :name, :screen_id
+
+    def initialize(current_user:, id:, name:, screen_id:)
+      super(current_user:)
+      @id = id
+      @name = name
+      @screen_id = screen_id
+    end
+
     def call
-      playlist = Playlist.find_by(id:)
+      playlist = current_user.playlists.find_by(id:)
 
       return OpenStruct.new(success?: false, playlist: nil, errors: ["playlist not found"]) if playlist.blank?
 
-      begin
-        authorize playlist, :update?
-      rescue StandardError
-        return OpenStruct.new(success?: false, playlist: nil, errors: ["must be logged in"])
-      end
+      authorize playlist, :update?
 
-      playlist.update(name:, user_id: current_user.id, screen_id:)
+      playlist.update(name:, screen_id:)
 
       OpenStruct.new(success?: true, playlist:, errors: playlist.errors.full_messages)
     end

@@ -7,11 +7,8 @@ module Api
 
       def index
         result = Events::GetAllEventsService.call(current_user:)
-        if result.success?
-          render json: { data: serializer_events(result.events) }, status: :ok
-        else
-          render json: { errors: result.errors }, status: :unprocessable_entity
-        end
+
+        render json: { data: serialize_events(result.events) }, status: :ok
       end
 
       def show
@@ -56,7 +53,7 @@ module Api
 
       private
 
-      def serializer_events(content)
+      def serialize_events(content)
         ActiveModelSerializers::SerializableResource.new(content, each_serializer: EventSerializer)
       end
 

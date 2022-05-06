@@ -1,17 +1,20 @@
 # frozen_string_literal: true
 
 module Contents
-  class DeleteContentService < ApplicationService
+  class DeleteContentService < AuthorizedService
+    attr_reader :id
+
+    def initialize(id:, current_user:)
+      super(current_user:)
+      @id = id
+    end
+
     def call
-      content = Content.find_by(id:)
+      content = current_user.contents.find_by(id:)
 
       return OpenStruct.new(success?: false, content: nil, errors: ["content not found"]) if content.blank?
 
-      begin
-        authorize content, :destroy?
-      rescue StandardError
-        return OpenStruct.new(success?: false, content: nil, errors: ["must be logged in"]) if content.blank?
-      end
+      authorize content, :destroy?
 
       content.destroy
 

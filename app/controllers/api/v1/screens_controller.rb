@@ -6,12 +6,9 @@ module Api
       before_action :authenticate_user!
 
       def index
-        result = Screens::GetAllScreensService.call(current_user:)
-        if result.success?
-          render json: { screens: serializer_screens(result.screens) }, status: :ok
-        else
-          render json: { errors: result.errors }, status: :unprocessable_entity
-        end
+        result = Screens::GetAllScreensService.call(current_user:, event_id: params[:event_id])
+
+        render json: { screens: serialize_screens(result.screens) }, status: :ok
       end
 
       def show
@@ -43,7 +40,7 @@ module Api
       end
 
       def destroy
-        result = Screens::DeleteScreenService.call(id: params[:id])
+        result = Screens::DeleteScreenService.call(id: params[:id], current_user:)
         if result.success?
           render json: { data: serializer_screen(result.screen) }, status: :ok
         else
@@ -53,7 +50,7 @@ module Api
 
       private
 
-      def serializer_screens(content)
+      def serialize_screens(content)
         ActiveModelSerializers::SerializableResource.new(content, each_serializer: ScreenSerializer)
       end
 

@@ -1,10 +1,16 @@
 # frozen_string_literal: true
 
 module Events
-  class CreateEventService < ApplicationService
+  class CreateEventService < AuthorizedService
+    attr_reader :name
+
+    def initialize(current_user:, name:)
+      super(current_user:)
+      @name = name
+    end
+
     def call
-      event = Event.new(name:, user_id: current_user.id)
-      authorize event, :create?
+      event = current_user.events.new(name:)
 
       OpenStruct.new(success?: event.save, event:, errors: event.errors.full_messages)
     end
